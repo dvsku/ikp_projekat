@@ -1,7 +1,7 @@
 #include <winsock2.h>
 #pragma once
 
-#include <doubly_linked_list.h>
+#include "../common/doubly_linked_list.h"
 #include <string>
 #include <thread>
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "client.h"
+#include "../common/client.h"
 class qs_client : public client {
 	private:
 
