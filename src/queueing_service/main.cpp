@@ -1,25 +1,80 @@
-#include <iostream>
-#include "qs_server.h"
-#include "qs_client.h"
-#include "queue.h"
+
+
+#ifdef _DEBUG
+	#define _CRTDBG_MAP_ALLOC
+	#include <crtdbg.h>
+	#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+	#define new DEBUG_NEW
+#endif
+
 #include <conio.h>
 
-int main(int argc, char* argv[]) {
-	if (argc == 1)
-		return 0;
+#include <string>
 
-	if (argc == 3) {
-		if (strcmp(argv[1], "-s") == 0) {
-			int port = atoi(argv[2]);
-			qs_server server = qs_server(port);
-			server.start();
+#include "queueing_service.h"
+#include "logger.h"
+
+void print_usage();
+
+int main(int argc, char* argv[]) {		
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+
+	if (argc < 5 || argc > 5) {
+		print_usage();
+		return 0;
+	}
+	if (strcmp(argv[1], "-s") != 0 && strcmp(argv[1], "-c") != 0 && strcmp(argv[3], "-p") != 0) {
+		print_usage();
+		return 0;
+	}
+
+	bool start_as_host = strcmp(argv[1], "-s") == 0;
+	int port = atoi(argv[2]);
+	int clients_port = atoi(argv[4]);
+
+	queueing_service::queueing_service* p_q_service = new queueing_service::queueing_service(port, clients_port, start_as_host);
+	
+	if (start_as_host) {
+		if (p_q_service->start_as_host() == -1) {
+			LOG_INFO("MAIN", "Failed to start as host. Exiting.");
+			delete p_q_service;
+			return 1;
 		}
-		if (strcmp(argv[1], "-c") == 0) {
-			int port = atoi(argv[2]);
-			qs_client c = qs_client();
-			c.connect_to_service(port);
+	}
+	else {
+		if (p_q_service->start_as_client() == -1) {
+			LOG_INFO("MAIN", "Failed to start as client. Exiting.");
+			p_q_service->stop_client();
+			delete p_q_service;
+			return 2;
 		}
 	}
 
+	while (true) {
+		std::string operation;
+		std::getline(std::cin, operation);
+
+		if (operation == "exit") break;
+	}
+
+	if (start_as_host)
+		p_q_service->stop_host();
+	else
+		p_q_service->stop_client();
+
+	delete p_q_service;
+	
+	WSACleanup();
+	_CrtDumpMemoryLeaks();
 	return 0;
+}
+
+void print_usage() {
+	printf("Usage:\n");
+	printf("queueing_service.exe -s|-c <service_port> -p <clients_port>\n");
+	printf("\t-s\t\t\t run service as host\n");
+	printf("\t-c\t\t\t run service as client\n");
+	printf("\t<service_port>\t\t port for service client to connect or service host to open\n");
+	printf("\t-c\t\t\t specifies that next argument is port for clients to connect\n");
+	printf("\t<clients_port>\t\t port for clients to connect\n");
 }
