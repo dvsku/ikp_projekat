@@ -82,6 +82,7 @@ namespace queueing_service {
                     if (bytes_received == SOCKET_ERROR) {
                         closesocket(*m_connected_service_socket);
                         m_connected_service_socket = nullptr;
+                        m_parent->on_service_disconnected();
                         LOG_INFO("QSS_RECV", "Queueing service disconnected.", WSAGetLastError());
                         delete[] recv_buffer;
                         break;
@@ -90,6 +91,7 @@ namespace queueing_service {
                     if (bytes_received == 0) {
                         closesocket(*m_connected_service_socket);
                         m_connected_service_socket = nullptr;
+                        m_parent->on_service_disconnected();
                         LOG_INFO("QSS_RECV", "Queueing service disconnected.", WSAGetLastError());
                         delete[] recv_buffer;
                         break;

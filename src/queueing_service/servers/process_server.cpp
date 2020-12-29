@@ -88,111 +88,102 @@ namespace queueing_service {
             to_process -= sizeof(short);
 
             // get request
-            common::request_to_service request = (common::request_to_service)(ntohs(binary_reader.read_short(pos)));
+            common::command command = (common::command)(ntohs(binary_reader.read_short(pos)));
             to_process -= sizeof(short);
 
             // get data length
             short len = ntohs(binary_reader.read_short(pos));
             to_process -= sizeof(short);
 
-            switch (request) {
-                case common::request_to_service::queue_exists : {
+            if (command == common::command::ctos_connect_to_queue) {
+                // get message data
+                char* data = binary_reader.read_char(pos, len);
+                to_process -= len;
+
+                std::string queue_name(data);
+                bool connected = m_parent->connect_to_queue(queue_name, t_socket);
+
+                unsigned int total_size;
+                char* response = serialize_message(common::message_type::t_bool, common::command::stoc_connect_to_queue, &connected, &total_size);
+
+                int result = send(*t_socket, response, total_size, 0);
+
+                if (result == SOCKET_ERROR) {
+                    m_parent->on_client_disconnected(t_socket);
+                }
+
+                delete[] data;
+            }
+            else if (command == common::command::ctos_queue_client_exists) {
+                // get message data
+                char* data = binary_reader.read_char(pos, len);
+                to_process -= len;
+
+                std::string queue_name(data);
+                bool client_exists = m_parent->is_client_connected_to_queue(data);
+
+                unsigned int total_size;
+                char* response = serialize_message(common::message_type::t_bool, common::command::stoc_queue_client_exists, &client_exists, &total_size);
+
+                int result = send(*t_socket, response, total_size, 0);
+
+                if (result == SOCKET_ERROR) {
+                    m_parent->on_client_disconnected(t_socket);
+                }
+
+                delete[] data;
+            }
+            else if (command == common::command::ctos_send_message) {
+                if (type == common::message_type::t_int) {
+                    // get message data
+                    int* data = new int(ntohl(binary_reader.read_int(pos)));
+                    to_process -= sizeof(int);
+
+                    message<int> msg(receiver::service, data);
+                    m_parent->m_queue_int.insert_back(msg);
+
+                    LOG_INFO("PS_HRECV_INT", "Message received from client: %d", *data);
+                }
+                else if (type == common::message_type::t_float) {
+                    // get message data
+                    float* data = new float(ntohf(binary_reader.read_float(pos)));
+                    to_process -= sizeof(float);
+
+                    message<float> msg(receiver::service, data);
+                    m_parent->m_queue_float.insert_back(msg);
+
+                    LOG_INFO("PS_HRECV_FLOAT", "Message received from client: %.2f", *data);
+                }
+                else if (type == common::message_type::t_double) {
+                    // get message data
+                    double* data = new double(ntohd(binary_reader.read_double(pos)));
+                    to_process -= sizeof(double);
+
+                    message<double> msg(receiver::service, data);
+                    m_parent->m_queue_double.insert_back(msg);
+
+                    LOG_INFO("PS_HRECV_DOUBLE", "Message received from client: %.2f", *data);
+                }
+                else if (type == common::message_type::t_short) {
+                    // get message data
+                    short* data = new short(ntohs(binary_reader.read_short(pos)));
+                    to_process -= sizeof(short);
+
+                    message<short> msg(receiver::service, data);
+                    m_parent->m_queue_short.insert_back(msg);
+
+                    LOG_INFO("PS_HRECV_SHORT", "Message received from client: %d", *data);
+                }
+                else if (type == common::message_type::t_char) {
                     // get message data
                     char* data = binary_reader.read_char(pos, len);
                     to_process -= len;
 
-                    // respond with bool
-                    std::string queue_name(data);
-                    bool queue_exists = m_parent->queue_exists(queue_name);
+                    message<char> msg(receiver::service, data);
+                    m_parent->m_queue_char.insert_back(msg);
 
-                    unsigned int total_size;
-                    char* response = serialize_response_to_client(common::response_from_service::queue_exists, queue_exists, &total_size);
-
-                    int result = send(*t_socket, response, total_size, 0);
-
-                    if (result == SOCKET_ERROR) {
-                        m_parent->on_client_disconnected(t_socket);
-                    }
-
-                    delete[] data;
-                    break;
-                };
-                case common::request_to_service::connect_to_queue : {
-                    // get message data
-                    char* data = binary_reader.read_char(pos, len);
-                    to_process -= len;
-
-                    // respond with bool
-                    std::string queue_name(data);
-                    bool connected = m_parent->connect_to_queue(queue_name, t_socket);
-
-                    unsigned int total_size;
-                    char* response = serialize_response_to_client(common::response_from_service::connect_to_queue, connected, &total_size);
-
-                    int result = send(*t_socket, response, total_size, 0);
-
-                    if (result == SOCKET_ERROR) {
-                        m_parent->on_client_disconnected(t_socket);
-                    }
-
-                    delete[] data;
-                    break;
-                };
-                case common::request_to_service::send_message: {
-                    // add message to queue
-                    if (type == common::message_type::t_int) {
-                        // get message data
-                        int* data = new int(ntohl(binary_reader.read_int(pos)));
-                        to_process -= sizeof(int);
-
-                        message<int> msg(receiver::service, data);
-                        m_parent->m_queue_int.insert_back(msg);
-
-                        LOG_INFO("PS_HRECV_INT", "Message received from client: %d", *data);
-                    }
-                    else if (type == common::message_type::t_float) {
-                        // get message data
-                        float* data = new float(ntohf(binary_reader.read_float(pos)));
-                        to_process -= sizeof(float);
-
-                        message<float> msg(receiver::service, data);
-                        m_parent->m_queue_float.insert_back(msg);
-
-                        LOG_INFO("PS_HRECV_FLOAT", "Message received from client: %.2f", *data);
-                    }
-                    else if (type == common::message_type::t_double) {
-                        // get message data
-                        double* data = new double(ntohd(binary_reader.read_double(pos)));
-                        to_process -= sizeof(double);
-
-                        message<double> msg(receiver::service, data);
-                        m_parent->m_queue_double.insert_back(msg);
-
-                        LOG_INFO("PS_HRECV_DOUBLE", "Message received from client: %.2f", *data);
-                    }
-                    else if (type == common::message_type::t_short) {
-                        // get message data
-                        short* data = new short(ntohs(binary_reader.read_short(pos)));
-                        to_process -= sizeof(short);
-
-                        message<short> msg(receiver::service, data);
-                        m_parent->m_queue_short.insert_back(msg);
-
-                        LOG_INFO("PS_HRECV_SHORT", "Message received from client: %d", *data);
-                    }
-                    else if (type == common::message_type::t_char) {
-                        // get message data
-                        char* data = binary_reader.read_char(pos, len);
-                        to_process -= len;
-
-                        message<char> msg(receiver::service, data);
-                        m_parent->m_queue_char.insert_back(msg);
-
-                        LOG_INFO("PS_HRECV_CHAR", "Message received from client: %s", data);
-                    }
-
-                    break;
-                };
+                    LOG_INFO("PS_HRECV_CHAR", "Message received from client: %s", data);
+                }
             }
         }
 

@@ -13,4 +13,8 @@ namespace queueing_service {
     void queueing_service_client::handle_recv(char* t_buffer, unsigned int t_length) {
         handle_message(t_buffer, t_length);
     }
+
+    void queueing_service_client::handle_disconnect() {
+        m_parent->on_service_disconnected();
+    }
 }

@@ -18,6 +18,7 @@ namespace queueing_service {
 
 		protected:
 			void handle_recv(char* t_buffer, unsigned int t_length);
+			void handle_disconnect();
 	};
 }
 #endif

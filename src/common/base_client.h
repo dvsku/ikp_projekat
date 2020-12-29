@@ -32,6 +32,7 @@ namespace common {
 
 		protected:
 			virtual void handle_recv(char* buffer, unsigned int length) = 0;
+			virtual void handle_disconnect() = 0;
 	};
 }
 

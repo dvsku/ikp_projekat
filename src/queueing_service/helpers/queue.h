@@ -16,22 +16,22 @@ namespace queueing_service {
 	template<class T> class queue {
 		private:
 			SOCKET* m_p_connected_client_socket;
+			
 			common::linked_list<T> m_elements;
 			std::mutex m_mutex;
 
 		public:
 			std::string m_name;
+			bool m_client_connected;
 
-		#pragma region constructor and destructor
 			queue<T>(std::string name) {
 				this->m_p_connected_client_socket = nullptr;
 				this->m_name = name;
+				this->m_client_connected = false;
 			}
 
 			~queue<T>() {}
-		#pragma endregion
 
-		#pragma region methods
 			bool connect_to_queue(SOCKET* t_client_socket) {
 				m_mutex.lock();
 				auto result = p_connect_to_queue(t_client_socket);
@@ -39,11 +39,15 @@ namespace queueing_service {
 				return result;
 			}
 
-			void disconnect_from_queue(SOCKET* t_client_socket) {
+			bool disconnect_from_queue(SOCKET* t_client_socket) {
 				m_mutex.lock();
-				if (t_client_socket == m_p_connected_client_socket)
+				bool result = false;
+				if (t_client_socket == m_p_connected_client_socket) {
 					m_p_connected_client_socket = nullptr;
+					result = true;
+				}
 				m_mutex.unlock();
+				return result;
 			}
 
 			bool is_empty() {
@@ -65,7 +69,10 @@ namespace queueing_service {
 			SOCKET* get_connected_client() {
 				return m_p_connected_client_socket;
 			}
-		#pragma endregion
+
+			bool is_client_connected_to_queue(std::string t_name) {
+				return m_name == t_name && m_client_connected;
+			}
 
 		private:
 			bool p_connect_to_queue(SOCKET* t_client_socket) {
