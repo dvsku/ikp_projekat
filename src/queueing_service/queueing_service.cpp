@@ -41,8 +41,8 @@ namespace queueing_service {
 			return -1;
 		}
 		
-		LOG_INFO("QUEUEING_SERVICE", "Accepting service connection on port %d.", m_service_port);
-		LOG_INFO("QUEUEING_SERVICE", "Accepting client connections on port %d.", m_clients_port);
+		LOG_INFO("QS", "Accepting service connection on port %d.", m_service_port);
+		LOG_INFO("QS", "Accepting client connections on port %d.", m_clients_port);
 		return 0;
 	}
 
@@ -50,8 +50,8 @@ namespace queueing_service {
 		if (m_service_client.establish_connection(m_service_port) == -1 || m_clients_server.start(m_clients_port) == -1) {
 			return -1;
 		}
-		LOG_INFO("QUEUEING_SERVICE", "Connected to service on port %d.", m_service_port);
-		LOG_INFO("QUEUEING_SERVICE", "Accepting client connections on port %d.", m_clients_port);
+		LOG_INFO("QS", "Connected to service on port %d.", m_service_port);
+		LOG_INFO("QS", "Accepting client connections on port %d.", m_clients_port);
 		return 0;
 	}
 
@@ -180,16 +180,16 @@ namespace queueing_service {
 
 				SOCKET* client_socket = m_queue_int.get_connected_client();
 				if (client_socket == nullptr) {
-					LOG_WARNING("QUEUEING_SERVICE_PROCESS_INT", "There was no client connected to queue, deleting message.");
+					LOG_WARNING("QS_PROCESS_INT", "There was no client connected to queue, deleting message.");
 				}
 				else {
 					int result = send(*client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
-						LOG_ERROR("QUEUEING_SERVICE_PROCESS_INT", "Send message to client failed, deleting message.");
+						LOG_ERROR("QS_PROCESS_INT", "Send message to client failed, deleting message.");
 						// close socket
 					}
 					else {
-						LOG_INFO("QUEUEING_SERVICE_PROCESS_INT", "Message sent to client. Total bytes sent: %d.", result);
+						LOG_INFO("QS_PROCESS_INT", "Message sent to client. Total bytes sent: %d.", result);
 					}
 				}
 				delete msg.m_data;
@@ -203,7 +203,7 @@ namespace queueing_service {
 					m_queue_int.insert_back(msg);
 				}
 				else {					// message was sent
-					LOG_INFO("QUEUEING_SERVICE_PROCESS_INT", "Message sent to service. Total bytes sent: %d.", result);
+					LOG_INFO("QS_PROCESS_INT", "Message sent to service. Total bytes sent: %d.", result);
 					delete msg.m_data;
 				}
 				delete[] message;
@@ -228,15 +228,15 @@ namespace queueing_service {
 
 				SOCKET* client_socket = m_queue_float.get_connected_client();
 				if (client_socket == nullptr) {
-					LOG_WARNING("QUEUEING_SERVICE_PROCESS_FLOAT", "There was no client connected to queue, deleting message.");
+					LOG_WARNING("QS_PROCESS_FLOAT", "There was no client connected to queue, deleting message.");
 				}
 				else {
 					int result = send(*client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
-						LOG_ERROR("QUEUEING_SERVICE_PROCESS_FLOAT", "Send message to client failed, deleting message.");
+						LOG_ERROR("QS_PROCESS_FLOAT", "Send message to client failed, deleting message.");
 					}
 					else {
-						LOG_INFO("QUEUEING_SERVICE_PROCESS_FLOAT", "Message sent to client. Total bytes sent: %d.", result);
+						LOG_INFO("QS_PROCESS_FLOAT", "Message sent to client. Total bytes sent: %d.", result);
 					}
 				}
 				delete msg.m_data;
@@ -250,7 +250,7 @@ namespace queueing_service {
 					m_queue_float.insert_back(msg);
 				}
 				else {					// message was sent
-					LOG_INFO("QUEUEING_SERVICE_PROCESS_FLOAT", "Message sent to service. Total bytes sent: %d.", result);
+					LOG_INFO("QS_PROCESS_FLOAT", "Message sent to service. Total bytes sent: %d.", result);
 					delete msg.m_data;
 				}
 
@@ -276,15 +276,15 @@ namespace queueing_service {
 
 				SOCKET* client_socket = m_queue_double.get_connected_client();
 				if (client_socket == nullptr) {
-					LOG_WARNING("QUEUEING_SERVICE_PROCESS_DOUBLE", "There was no client connected to queue, deleting message.");
+					LOG_WARNING("QS_PROCESS_DOUBLE", "There was no client connected to queue, deleting message.");
 				}
 				else {
 					int result = send(*client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
-						LOG_ERROR("QUEUEING_SERVICE_PROCESS_DOUBLE", "Send message to client failed, deleting message.");
+						LOG_ERROR("QS_PROCESS_DOUBLE", "Send message to client failed, deleting message.");
 					}
 					else {
-						LOG_INFO("QUEUEING_SERVICE_PROCESS_DOUBLE", "Message sent to client. Total bytes sent: %d.", result);
+						LOG_INFO("QS_PROCESS_DOUBLE", "Message sent to client. Total bytes sent: %d.", result);
 					}
 				}
 				delete msg.m_data;
@@ -298,7 +298,7 @@ namespace queueing_service {
 					m_queue_double.insert_back(msg);
 				}
 				else {					// message was sent
-					LOG_INFO("QUEUEING_SERVICE_PROCESS_DOUBLE", "Message sent to service. Total bytes sent: %d.", result);
+					LOG_INFO("QS_PROCESS_DOUBLE", "Message sent to service. Total bytes sent: %d.", result);
 					delete msg.m_data;
 				}
 
@@ -324,15 +324,15 @@ namespace queueing_service {
 
 				SOCKET* client_socket = m_queue_short.get_connected_client();
 				if (client_socket == nullptr) {
-					LOG_WARNING("QUEUEING_SERVICE_PROCESS_SHORT", "There was no client connected to queue, deleting message.");
+					LOG_WARNING("QS_PROCESS_SHORT", "There was no client connected to queue, deleting message.");
 				}
 				else {
 					int result = send(*client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
-						LOG_ERROR("QUEUEING_SERVICE_PROCESS_SHORT", "Send message to client failed, deleting message.");
+						LOG_ERROR("QS_PROCESS_SHORT", "Send message to client failed, deleting message.");
 					}
 					else {
-						LOG_INFO("QUEUEING_SERVICE_PROCESS_SHORT", "Message sent to client. Total bytes sent: %d.", result);
+						LOG_INFO("QS_PROCESS_SHORT", "Message sent to client. Total bytes sent: %d.", result);
 					}
 				}
 				delete msg.m_data;
@@ -347,7 +347,7 @@ namespace queueing_service {
 					m_queue_short.insert_back(msg);
 				}
 				else {					// message was sent
-					LOG_INFO("QUEUEING_SERVICE_PROCESS_SHORT", "Message sent to service. Total bytes sent: %d.", result);
+					LOG_INFO("QS_PROCESS_SHORT", "Message sent to service. Total bytes sent: %d.", result);
 					delete msg.m_data;
 				}
 
@@ -373,15 +373,15 @@ namespace queueing_service {
 
 				SOCKET* client_socket = m_queue_char.get_connected_client();
 				if (client_socket == nullptr) {
-					LOG_WARNING("QUEUEING_SERVICE_PROCESS_CHAR", "There was no client connected to queue, deleting message.");
+					LOG_WARNING("QS_PROCESS_CHAR", "There was no client connected to queue, deleting message.");
 				}
 				else {
 					int result = send(*client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
-						LOG_ERROR("QUEUEING_SERVICE_PROCESS_CHAR", "Send message to client failed, deleting message.");
+						LOG_ERROR("QS_PROCESS_CHAR", "Send message to client failed, deleting message.");
 					}
 					else {
-						LOG_INFO("QUEUEING_SERVICE_PROCESS_CHAR", "Message sent to client. Total bytes sent: %d.", result);
+						LOG_INFO("QS_PROCESS_CHAR", "Message sent to client. Total bytes sent: %d.", result);
 					}
 				}
 				delete[] msg.m_data;
@@ -395,7 +395,7 @@ namespace queueing_service {
 					m_queue_char.insert_back(msg);
 				}
 				else {					// message was sent
-					LOG_INFO("QUEUEING_SERVICE_PROCESS_CHAR", "Message sent to service. Total bytes sent: %d.", result);
+					LOG_INFO("QS_PROCESS_CHAR", "Message sent to service. Total bytes sent: %d.", result);
 					delete[] msg.m_data;
 				}
 				delete[] message;
@@ -405,4 +405,3 @@ namespace queueing_service {
 		}
 	}
 }
-

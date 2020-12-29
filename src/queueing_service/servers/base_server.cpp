@@ -18,7 +18,7 @@ namespace queueing_service {
 
         int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
         if (result != 0) {
-            LOG_ERROR("BASE_SERVER_START", "WSAStartup failed with error: %d", result);
+            LOG_ERROR("BS_START", "WSAStartup failed with error: %d", result);
             return -1;
         }
 
@@ -30,13 +30,13 @@ namespace queueing_service {
         this->m_listening_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         if (this->m_listening_socket == INVALID_SOCKET) {
-            LOG_ERROR("BASE_SERVER_START", "Creating socket failed with error: %d", WSAGetLastError());
+            LOG_ERROR("BS_START", "Creating socket failed with error: %d", WSAGetLastError());
             WSACleanup();
             return -1;
         }
 
         if (bind(this->m_listening_socket, (LPSOCKADDR)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-            LOG_ERROR("BASE_SERVER_START", "bind failed with error: %d", WSAGetLastError());
+            LOG_ERROR("BS_START", "bind failed with error: %d", WSAGetLastError());
             closesocket(this->m_listening_socket);
             WSACleanup();
             return -1;
@@ -44,14 +44,14 @@ namespace queueing_service {
 
         unsigned long int nonBlockingMode = 1;
         if (ioctlsocket(this->m_listening_socket, FIONBIO, &nonBlockingMode) == SOCKET_ERROR) {
-            LOG_ERROR("BASE_SERVER_START", "ioctlsocket failed with error: %d", WSAGetLastError());
+            LOG_ERROR("BS_START", "ioctlsocket failed with error: %d", WSAGetLastError());
             closesocket(this->m_listening_socket);
             WSACleanup();
             return -1;
         }
 
         if (listen(this->m_listening_socket, SOMAXCONN) == SOCKET_ERROR) {
-            LOG_ERROR("BASE_SERVER_START", "listen failed with error: %d", WSAGetLastError());
+            LOG_ERROR("BS_START", "listen failed with error: %d", WSAGetLastError());
             closesocket(this->m_listening_socket);
             WSACleanup();
             return -1;
@@ -86,7 +86,7 @@ namespace queueing_service {
                     break;
                 };
                 case -1: {  // error
-                    LOG_ERROR("BASE_SERVER_ACCEPT_CONNECTIONS", "select failed with error: %d", WSAGetLastError());
+                    LOG_ERROR("BS_AC", "select failed with error: %d", WSAGetLastError());
                     break;
                 };
                 default: {  // success
@@ -98,7 +98,7 @@ namespace queueing_service {
 
                     struct sockaddr_in* s = (struct sockaddr_in*)&connected_service_addr;
 
-                    LOG_INFO("BASE_SERVER_ACCEPT_CONNECTIONS", "Service connected from %s:%d", inet_ntoa(s->sin_addr), ntohs(s->sin_port));
+                    LOG_INFO("BS_AC", "Service connected from %s:%d", inet_ntoa(s->sin_addr), ntohs(s->sin_port));
                     handle_accept(&connected_service_socket);
                     break;
                 };

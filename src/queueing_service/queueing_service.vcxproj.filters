@@ -51,6 +51,9 @@
     <ClCompile Include="servers\queueing_service_server.cpp">
       <Filter>Source Files\servers</Filter>
     </ClCompile>
+    <ClCompile Include="service_message_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="queueing_service.h">
@@ -79,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="servers\queueing_service_server.h">
       <Filter>Header Files\servers</Filter>
+    </ClInclude>
+    <ClInclude Include="service_message_handler.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

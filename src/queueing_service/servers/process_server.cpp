@@ -42,7 +42,7 @@ namespace queueing_service {
                         break;
                     };
                     case -1: {  // error
-                        LOG_ERROR("PROCESS_SERVER_RECV_FROM_CLIENTS", "select failed with error: %d", WSAGetLastError());
+                        LOG_ERROR("PS_RECV", "select failed with error: %d", WSAGetLastError());
                         break;
                     };
                     default: {  // success
@@ -64,13 +64,13 @@ namespace queueing_service {
 
         if (bytes_received == SOCKET_ERROR) {
             m_parent->on_client_disconnected(t_socket);
-            LOG_INFO("PROCESS_SERVER_HANDLE_RECV", "Client disconnected.");
+            LOG_INFO("PS_HRECV", "Client disconnected.");
             return;
         }
 
         if (bytes_received == 0) {
             m_parent->on_client_disconnected(t_socket);
-            LOG_INFO("PROCESS_SERVER_HANDLE_RECV", "Client disconnected.");
+            LOG_INFO("PS_HRECV", "Client disconnected.");
             return;
         }
 
@@ -148,7 +148,7 @@ namespace queueing_service {
                         message<int> msg(receiver::service, data);
                         m_parent->m_queue_int.insert_back(msg);
 
-                        LOG_INFO("PROCESS_SERVER_HANDLE_RECV_INT", "Message received from client: %d", *data);
+                        LOG_INFO("PS_HRECV_INT", "Message received from client: %d", *data);
                     }
                     else if (type == common::message_type::t_float) {
                         // get message data
@@ -158,7 +158,7 @@ namespace queueing_service {
                         message<float> msg(receiver::service, data);
                         m_parent->m_queue_float.insert_back(msg);
 
-                        LOG_INFO("PROCESS_SERVER_HANDLE_RECV_FLOAT", "Message received from client: %.2f", *data);
+                        LOG_INFO("PS_HRECV_FLOAT", "Message received from client: %.2f", *data);
                     }
                     else if (type == common::message_type::t_double) {
                         // get message data
@@ -168,7 +168,7 @@ namespace queueing_service {
                         message<double> msg(receiver::service, data);
                         m_parent->m_queue_double.insert_back(msg);
 
-                        LOG_INFO("PROCESS_SERVER_HANDLE_RECV_DOUBLE", "Message received from client: %.2f", *data);
+                        LOG_INFO("PS_HRECV_DOUBLE", "Message received from client: %.2f", *data);
                     }
                     else if (type == common::message_type::t_short) {
                         // get message data
@@ -178,7 +178,7 @@ namespace queueing_service {
                         message<short> msg(receiver::service, data);
                         m_parent->m_queue_short.insert_back(msg);
 
-                        LOG_INFO("PROCESS_SERVER_HANDLE_RECV_SHORT", "Message received from client: %d", *data);
+                        LOG_INFO("PS_HRECV_SHORT", "Message received from client: %d", *data);
                     }
                     else if (type == common::message_type::t_char) {
                         // get message data
@@ -188,7 +188,7 @@ namespace queueing_service {
                         message<char> msg(receiver::service, data);
                         m_parent->m_queue_char.insert_back(msg);
 
-                        LOG_INFO("PROCESS_SERVER_HANDLE_RECV_CHAR", "Message received from client: %s", data);
+                        LOG_INFO("PS_HRECV_CHAR", "Message received from client: %s", data);
                     }
 
                     break;
@@ -196,6 +196,6 @@ namespace queueing_service {
             }
         }
 
-        LOG_INFO("PROCESS_SERVER_HANDLE_RECV", "Total bytes received from client: %d", bytes_received);
+        LOG_INFO("PS_HRECV", "Total bytes received from client: %d", bytes_received);
     }
 }

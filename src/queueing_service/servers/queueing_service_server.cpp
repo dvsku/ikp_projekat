@@ -1,13 +1,13 @@
 #include "queueing_service_server.h"
 #include "../queueing_service.h"
-#include "common_enums.h"
 #include "logger.h"
-#include "binary_reader.h"
 
 #define BUFFER_SIZE 1024
 
 namespace queueing_service {
-    queueing_service_server::queueing_service_server(queueing_service* t_parent) : base_server::base_server() {
+    queueing_service_server::queueing_service_server(queueing_service* t_parent) : 
+        base_server::base_server(), service_message_handler::service_message_handler(t_parent) {
+
         m_connected_service_socket = nullptr;
         m_parent = t_parent;
     }
@@ -40,7 +40,7 @@ namespace queueing_service {
         if (m_connected_service_socket != nullptr) {
             int ret_val = send(*m_connected_service_socket, t_msg, t_len, 0);
             if (ret_val == SOCKET_ERROR) {
-                LOG_ERROR("QUEUEING_SERVICE_SERVER_SEND_MESSAGE", "send failed with error: %d", WSAGetLastError());
+                LOG_ERROR("QSS_SM", "send failed with error: %d", WSAGetLastError());
                 return -1;
             }
             else {
@@ -71,7 +71,7 @@ namespace queueing_service {
                     break;
                 };
                 case -1: {  // error
-                    LOG_ERROR("QUEUEING_SERVICE_SERVER_RECV_FROM_CONNECTED_SERVICE", "select failed with error: %d", WSAGetLastError());
+                    LOG_ERROR("QSS_RECV", "select failed with error: %d", WSAGetLastError());
                     break;
                 };
                 default: {  // success
@@ -82,7 +82,7 @@ namespace queueing_service {
                     if (bytes_received == SOCKET_ERROR) {
                         closesocket(*m_connected_service_socket);
                         m_connected_service_socket = nullptr;
-                        LOG_INFO("QUEUEING_SERVICE_SERVER_RECV_FROM_CONNECTED_SERVICE", "Queueing service disconnected.", WSAGetLastError());
+                        LOG_INFO("QSS_RECV", "Queueing service disconnected.", WSAGetLastError());
                         delete[] recv_buffer;
                         break;
                     }
@@ -90,99 +90,17 @@ namespace queueing_service {
                     if (bytes_received == 0) {
                         closesocket(*m_connected_service_socket);
                         m_connected_service_socket = nullptr;
-                        LOG_INFO("QUEUEING_SERVICE_SERVER_RECV_FROM_CONNECTED_SERVICE", "Queueing service disconnected.", WSAGetLastError());
+                        LOG_INFO("QSS_RECV", "Queueing service disconnected.", WSAGetLastError());
                         delete[] recv_buffer;
                         break;
                     }
 
-                    handle_recv_from_connected_service(recv_buffer, bytes_received);
+                    handle_message(recv_buffer, bytes_received);
                     break;
                 };
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
-    }
-
-    void queueing_service_server::handle_recv_from_connected_service(char* t_buffer, unsigned int t_length) {
-        // total len of all messages received
-        unsigned int to_process = t_length;
-        // pointer to begining of buffer
-        char* pos = t_buffer;
-
-        common::binary_reader binary_reader{};
-
-        // keep going untill you process all messages
-        while (to_process != 0) {
-            // get message type
-            common::message_type type = (common::message_type)(ntohs(binary_reader.read_short(pos)));
-            to_process -= sizeof(short);
-
-            // get data length
-            short len = ntohs(binary_reader.read_short(pos));
-            to_process -= sizeof(short);
-
-            switch (type) {
-                case common::message_type::t_int: {
-                    // get message data
-                    int* data = new int(ntohl(binary_reader.read_int(pos)));
-                    to_process -= sizeof(int);
-
-                    message<int> msg(receiver::client, data);
-                    m_parent->m_queue_int.insert_back(msg);
-
-                    LOG_INFO("QUEUEING_SERVICE_SERVER_HANDLE_RECV_INT", "Message received from service: %d", *data);
-                    break;
-                }
-                case common::message_type::t_float: {
-                    // get message data
-                    float* data = new float(ntohf(binary_reader.read_float(pos)));
-                    to_process -= sizeof(float);
-
-                    message<float> msg(receiver::client, data);
-                    m_parent->m_queue_float.insert_back(msg);
-
-                    LOG_INFO("QUEUEING_SERVICE_SERVER_HANDLE_RECV_FLOAT", "Message received from service: %.2f", *data);
-                    break;
-                }
-                case common::message_type::t_double: {
-                    // get message data
-                    double* data = new double(ntohd(binary_reader.read_double(pos)));
-                    to_process -= sizeof(double);
-
-                    message<double> msg(receiver::client, data);
-                    m_parent->m_queue_double.insert_back(msg);
-
-                    LOG_INFO("QUEUEING_SERVICE_SERVER_RECV_DOUBLE", "Message received from service: %.2f", *data);
-                    break;
-                }
-                case common::message_type::t_short: {
-                    // get message data
-                    short* data = new short(ntohs(binary_reader.read_short(pos)));
-                    to_process -= sizeof(short);
-
-                    message<short> msg(receiver::client, data);
-                    m_parent->m_queue_short.insert_back(msg);
-
-                    LOG_INFO("QUEUEING_SERVICE_SERVER_HANDLE_RECV_SHORT", "Message received from service: %d", *data);
-                    break;
-                }
-                case common::message_type::t_char: {
-                    // get message data
-                    char* data = binary_reader.read_char(pos, len);
-                    to_process -= len;
-
-                    message<char> msg(receiver::client, data);
-                    m_parent->m_queue_char.insert_back(msg);
-
-                    LOG_INFO("QUEUEING_SERVICE_SERVER_HANDLE_RECV_CHAR", "Message received from service: %s", data);
-                    break;
-                }
-                default: break;
-            }
-        };
-
-        LOG_INFO("QUEUEING_SERVICE_SERVER_HANDLE_RECV", "Total bytes received from service: %d", t_length);
-        delete[] t_buffer;
     }
 }
