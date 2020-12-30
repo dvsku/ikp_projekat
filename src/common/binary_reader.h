@@ -10,6 +10,7 @@ namespace common {
 			float read_float(char*& t_buffer);
 			double read_double(char*& t_buffer);
 			short read_short(char*& t_buffer);
+			bool read_bool(char*& t_buffer);
 			char* read_char(char*& t_buffer, unsigned int t_length);
 	};
 }

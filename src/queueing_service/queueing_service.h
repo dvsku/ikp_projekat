@@ -12,6 +12,7 @@
 #include "./servers/process_server.h"
 #include "./clients/queueing_service_client.h"
 #include "linked_list.h"
+#include "common_enums.h"
 
 namespace queueing_service {
 	class queueing_service {
@@ -36,10 +37,9 @@ namespace queueing_service {
 			queue<message<short>>	m_queue_short;
 			queue<message<char>>	m_queue_char;
 			common::linked_list<SOCKET*> m_clients;
-			bool queue_exists(std::string t_name);
 			bool connect_to_queue(std::string t_name, SOCKET* t_client_socket);
-			
 			void on_client_disconnected(SOCKET* t_client_socket);
+			void on_service_disconnected();
 
 		public:
 			queueing_service(unsigned short t_service_port, unsigned short t_clients_port, bool t_is_host);
@@ -48,6 +48,10 @@ namespace queueing_service {
 			void stop_host();
 			void stop_client();
 			int send_message_to_service(char* t_msg, unsigned int t_len);
+			bool is_client_connected_to_queue(std::string t_name);
+
+			int notify_connected_to_queue(common::queue_type t_queue_type);
+			int notify_disconnected_from_queue(common::queue_type t_queue_type);
 
 		private:
 			void process_int();
@@ -57,7 +61,7 @@ namespace queueing_service {
 			void process_char();
 			void clean_queues();
 			void disconnect_from_queue(SOCKET* t_client_socket);
-		};
+	};
 }
 
 #endif

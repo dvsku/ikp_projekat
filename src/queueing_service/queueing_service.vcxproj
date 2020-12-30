@@ -157,6 +157,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="queueing_service.cpp" />
     <ClCompile Include="servers\base_server.cpp" />
+    <ClCompile Include="service_message_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helpers\enums.h" />
@@ -168,6 +169,7 @@
     <ClInclude Include="helpers\queue.h" />
     <ClInclude Include="queueing_service.h" />
     <ClInclude Include="servers\base_server.h" />
+    <ClInclude Include="service_message_handler.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">

@@ -28,6 +28,12 @@ namespace common {
 		return result;
 	}
 
+	bool binary_reader::read_bool(char*& t_buffer) {
+		bool result = *(bool*)t_buffer;
+		t_buffer += sizeof(bool);
+		return result;
+	}
+
 	char* binary_reader::read_char(char*& t_buffer, unsigned int t_length) {
 		char* result = new char[t_length];
 		strcpy_s(result, t_length, t_buffer);

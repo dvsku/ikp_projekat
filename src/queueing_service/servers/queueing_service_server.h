@@ -8,11 +8,12 @@
 #include <thread>
 
 #include "base_server.h"
+#include "../service_message_handler.h"
 
 namespace queueing_service {
 	class queueing_service;
 
-	class queueing_service_server : public base_server {
+	class queueing_service_server : public base_server , public service_message_handler {
 		private:
 			SOCKET* m_connected_service_socket;
 			std::thread m_connected_service_recv;
@@ -27,7 +28,6 @@ namespace queueing_service {
 
 		private:
 			void recv_from_connected_service();
-			void handle_recv_from_connected_service(char* t_buffer, unsigned int t_length);
 	};
 }
 
