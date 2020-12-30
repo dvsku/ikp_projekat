@@ -5,6 +5,9 @@
 #define BUFFER_SIZE 1024
 
 namespace queueing_service {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	CTOR
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     queueing_service_server::queueing_service_server(queueing_service* t_parent) : 
         base_server::base_server(), service_message_handler::service_message_handler(t_parent) {
 
@@ -12,6 +15,9 @@ namespace queueing_service {
         m_parent = t_parent;
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	CONNECTION METHODS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void queueing_service_server::stop() {
         // close listening socket and stop its thread
         base_server::stop();
@@ -27,15 +33,6 @@ namespace queueing_service {
         return ret_val;
     }
 
-    void queueing_service_server::handle_accept(SOCKET* t_socket) {
-        // close listening socket TODO
-
-        // set connected service socket
-        if (t_socket != nullptr) {
-            m_connected_service_socket = t_socket;
-        }
-    }
-
     int queueing_service_server::send_message(char* t_msg, unsigned int t_len) {
         if (m_connected_service_socket != nullptr) {
             int ret_val = send(*m_connected_service_socket, t_msg, t_len, 0);
@@ -48,6 +45,18 @@ namespace queueing_service {
             }
         }
         return -1;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	HANDLERS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void queueing_service_server::handle_accept(SOCKET* t_socket) {
+        // close listening socket TODO
+
+        // set connected service socket
+        if (t_socket != nullptr) {
+            m_connected_service_socket = t_socket;
+        }
     }
 
     void queueing_service_server::recv_from_connected_service() {

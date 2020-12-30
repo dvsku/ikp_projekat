@@ -6,6 +6,9 @@
 #include "logger.h"
 
 namespace queueing_service {
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	CTOR
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	queueing_service::queueing_service(unsigned short t_service_port, unsigned short t_clients_port, bool t_is_host) :
 		m_service_port(t_service_port), m_clients_port(t_clients_port), m_is_host(t_is_host), 
 		m_clients_server(this), m_service_server(this), m_service_client(this),
@@ -19,6 +22,9 @@ namespace queueing_service {
 		m_process_queue_char = std::thread(&queueing_service::process_char, this);
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	CONNECTION METHODS
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	int queueing_service::start_as_host() {
 		if (m_service_server.start(m_service_port) == -1 || m_clients_server.start(m_clients_port) == -1) {
 			return -1;
@@ -52,53 +58,36 @@ namespace queueing_service {
 		clean_queues();
 	}
 
-	void queueing_service::clean_queues() {
-		if (m_process_queue_int.joinable())
-			m_process_queue_int.join();
-
-		if (m_process_queue_float.joinable())
-			m_process_queue_float.join();
-
-		if (m_process_queue_double.joinable())
-			m_process_queue_double.join();
-
-		if (m_process_queue_short.joinable())
-			m_process_queue_short.join();
-
-		if (m_process_queue_char.joinable())
-			m_process_queue_char.join();
-
-		unsigned int cnt = m_queue_int.count();
-		for (unsigned int i = 0; i < cnt; i++) {
-			message<int> msg = m_queue_int.take_first_element();
-			delete msg.m_data;
-		}
-
-		cnt = m_queue_float.count();
-		for (unsigned int i = 0; i < cnt; i++) {
-			message<float> msg = m_queue_float.take_first_element();
-			delete msg.m_data;
-		}
-
-		cnt = m_queue_double.count();
-		for (unsigned int i = 0; i < cnt; i++) {
-			message<double> msg = m_queue_double.take_first_element();
-			delete msg.m_data;
-		}
-
-		cnt = m_queue_short.count();
-		for (unsigned int i = 0; i < cnt; i++) {
-			message<short> msg = m_queue_short.take_first_element();
-			delete msg.m_data;
-		}
-
-		cnt = m_queue_char.count();
-		for (unsigned int i = 0; i < cnt; i++) {
-			message<char> msg = m_queue_char.take_first_element();
-			delete[] msg.m_data;
-		}
+	void queueing_service::queueing_service::on_client_disconnected(SOCKET* t_client_socket) {
+		disconnect_from_queue(t_client_socket);
+		m_clients.remove_item_by_value(t_client_socket);
+		closesocket(*t_client_socket);
 	}
 
+	void queueing_service::queueing_service::on_service_disconnected() {
+		m_queue_int.m_client_connected = false;
+		m_queue_float.m_client_connected = false;
+		m_queue_double.m_client_connected = false;
+		m_queue_short.m_client_connected = false;
+		m_queue_char.m_client_connected = false;
+	}
+
+	int queueing_service::send_message_to_service(char* t_msg, unsigned int t_len) {
+		if (m_is_host)
+			return m_service_server.send_message(t_msg, t_len);
+		else
+			return m_service_client.send_message(t_msg, t_len);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	QUEUE METHODS
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	bool queueing_service::queueing_service::is_client_connected_to_queue(std::string t_name) {
+		return m_queue_int.is_client_connected_to_queue(t_name) || m_queue_float.is_client_connected_to_queue(t_name) ||
+			m_queue_double.is_client_connected_to_queue(t_name) || m_queue_short.is_client_connected_to_queue(t_name) ||
+			m_queue_char.is_client_connected_to_queue(t_name);
+	}
+	
 	bool queueing_service::queueing_service::connect_to_queue(std::string t_name, SOCKET* t_client_socket) {
 		if (m_queue_int.m_name == t_name && m_queue_int.connect_to_queue(t_client_socket)) {
 			notify_connected_to_queue(common::queue_type::t_int);
@@ -151,27 +140,9 @@ namespace queueing_service {
 		return send_message_to_service(message, total_size);
 	}
 
-	void queueing_service::queueing_service::on_client_disconnected(SOCKET* t_client_socket) {
-		disconnect_from_queue(t_client_socket);
-		m_clients.remove_item_by_value(t_client_socket);
-		closesocket(*t_client_socket);
-	}
-
-	void queueing_service::queueing_service::on_service_disconnected() {
-		m_queue_int.m_client_connected = false;
-		m_queue_float.m_client_connected = false;
-		m_queue_double.m_client_connected = false;
-		m_queue_short.m_client_connected = false;
-		m_queue_char.m_client_connected = false;
-	}
-
-	int queueing_service::send_message_to_service(char* t_msg, unsigned int t_len) {
-		if (m_is_host)
-			return m_service_server.send_message(t_msg, t_len);
-		else
-			return m_service_client.send_message(t_msg, t_len);
-	}
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MESSAGE PROCESSING METHODS
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void queueing_service::process_int() {
 		while (!m_stop) {
 			if (m_queue_int.is_empty()) {
@@ -411,9 +382,53 @@ namespace queueing_service {
 		}
 	}
 
-	bool queueing_service::queueing_service::is_client_connected_to_queue(std::string t_name) {
-		return m_queue_int.is_client_connected_to_queue(t_name) || m_queue_float.is_client_connected_to_queue(t_name) || 
-			m_queue_double.is_client_connected_to_queue(t_name) || m_queue_short.is_client_connected_to_queue(t_name) || 
-			m_queue_char.is_client_connected_to_queue(t_name);
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	CLEANUP METHODS
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void queueing_service::clean_queues() {
+		if (m_process_queue_int.joinable())
+			m_process_queue_int.join();
+
+		if (m_process_queue_float.joinable())
+			m_process_queue_float.join();
+
+		if (m_process_queue_double.joinable())
+			m_process_queue_double.join();
+
+		if (m_process_queue_short.joinable())
+			m_process_queue_short.join();
+
+		if (m_process_queue_char.joinable())
+			m_process_queue_char.join();
+
+		unsigned int cnt = m_queue_int.count();
+		for (unsigned int i = 0; i < cnt; i++) {
+			message<int> msg = m_queue_int.take_first_element();
+			delete msg.m_data;
+		}
+
+		cnt = m_queue_float.count();
+		for (unsigned int i = 0; i < cnt; i++) {
+			message<float> msg = m_queue_float.take_first_element();
+			delete msg.m_data;
+		}
+
+		cnt = m_queue_double.count();
+		for (unsigned int i = 0; i < cnt; i++) {
+			message<double> msg = m_queue_double.take_first_element();
+			delete msg.m_data;
+		}
+
+		cnt = m_queue_short.count();
+		for (unsigned int i = 0; i < cnt; i++) {
+			message<short> msg = m_queue_short.take_first_element();
+			delete msg.m_data;
+		}
+
+		cnt = m_queue_char.count();
+		for (unsigned int i = 0; i < cnt; i++) {
+			message<char> msg = m_queue_char.take_first_element();
+			delete[] msg.m_data;
+		}
 	}
 }

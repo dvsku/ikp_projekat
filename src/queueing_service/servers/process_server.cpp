@@ -6,14 +6,16 @@
 #include "binary_reader.h"
 
 namespace queueing_service {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	CTOR
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     process_server::process_server(queueing_service* t_parent) : base_server::base_server(), m_clients_process_recv(PROCESS_RECV_THREADS) {
         m_parent = t_parent;
     }
 
-    void process_server::handle_accept(SOCKET* t_socket) {
-        m_parent->m_clients.append_node(t_socket);
-    }
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	CONNECTION METHODS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void process_server::stop() {
         // close listening socket and stop its thread
         base_server::stop();
@@ -38,24 +40,34 @@ namespace queueing_service {
                 FD_SET(*current_socket, &fds);
 
                 switch (select(0, &fds, 0, 0, &timeout)) {
-                    case 0: {  // timeout
-                        break;
-                    };
-                    case -1: {  // error
-                        LOG_ERROR("PS_RECV", "select failed with error: %d", WSAGetLastError());
-                        break;
-                    };
-                    default: {  // success
+                case 0:
+                {  // timeout
+                    break;
+                };
+                case -1:
+                {  // error
+                    LOG_ERROR("PS_RECV", "select failed with error: %d", WSAGetLastError());
+                    break;
+                };
+                default:
+                {  // success
 
-                        m_clients_process_recv.enqueue([](SOCKET* t_socket, process_server* t_ps) {
-                            t_ps->handle_recv(t_socket);
-                        }, current_socket, this);
+                    m_clients_process_recv.enqueue([](SOCKET* t_socket, process_server* t_ps) {
+                        t_ps->handle_recv(t_socket);
+                    }, current_socket, this);
 
-                        break;
-                    };
+                    break;
+                };
                 }
             }
         }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	HANDLERS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void process_server::handle_accept(SOCKET* t_socket) {
+        m_parent->m_clients.append_node(t_socket);
     }
 
     void process_server::handle_recv(SOCKET* t_socket) {
