@@ -11,8 +11,8 @@
 #include "./servers/queueing_service_server.h"
 #include "./servers/process_server.h"
 #include "./clients/queueing_service_client.h"
-#include "linked_list.h"
-#include "common_enums.h"
+#include "./helpers/linked_list.h"
+#include "./helpers/common_enums.h"
 
 namespace queueing_service {
 	class queueing_service {
@@ -31,27 +31,23 @@ namespace queueing_service {
 			process_server m_clients_server;
 
 		public:
-			queue<message<int>>	m_queue_int;
+			queue<message<int>>		m_queue_int;
 			queue<message<float>>	m_queue_float;
 			queue<message<double>>	m_queue_double;
 			queue<message<short>>	m_queue_short;
 			queue<message<char>>	m_queue_char;
-			common::linked_list<SOCKET*> m_clients;
-			bool connect_to_queue(std::string t_name, SOCKET* t_client_socket);
-			void on_client_disconnected(SOCKET* t_client_socket);
-			void on_service_disconnected();
-
+			common::linked_list<SOCKET> m_clients;
+			
 		public:
 			queueing_service(unsigned short t_service_port, unsigned short t_clients_port, bool t_is_host);
 			int start_as_host();
 			int start_as_client();
 			void stop_host();
 			void stop_client();
-			int send_message_to_service(char* t_msg, unsigned int t_len);
 			bool is_client_connected_to_queue(std::string t_name);
-
-			int notify_connected_to_queue(common::queue_type t_queue_type);
-			int notify_disconnected_from_queue(common::queue_type t_queue_type);
+			void on_client_disconnected(SOCKET t_client_socket);
+			void on_service_disconnected();
+			bool connect_to_queue(std::string t_name, SOCKET t_client_socket);
 
 		private:
 			void process_int();
@@ -60,7 +56,10 @@ namespace queueing_service {
 			void process_short();
 			void process_char();
 			void clean_queues();
-			void disconnect_from_queue(SOCKET* t_client_socket);
+			void disconnect_from_queue(SOCKET t_client_socket);
+			int notify_connected_to_queue(common::queue_type t_queue_type);
+			int notify_disconnected_from_queue(common::queue_type t_queue_type);
+			int send_message_to_service(char* t_msg, unsigned int t_len);
 	};
 }
 

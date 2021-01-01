@@ -151,25 +151,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="helpers\queue.cpp" />
     <ClCompile Include="servers\process_server.cpp" />
     <ClCompile Include="clients\queueing_service_client.cpp" />
     <ClCompile Include="servers\queueing_service_server.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="queueing_service.cpp" />
     <ClCompile Include="servers\base_server.cpp" />
-    <ClCompile Include="service_message_handler.cpp" />
+    <ClCompile Include="helpers\service_message_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helpers\enums.h" />
     <ClInclude Include="helpers\message.h" />
-    <ClInclude Include="helpers\message_serializer.h" />
     <ClInclude Include="servers\process_server.h" />
     <ClInclude Include="clients\queueing_service_client.h" />
     <ClInclude Include="servers\queueing_service_server.h" />
     <ClInclude Include="helpers\queue.h" />
     <ClInclude Include="queueing_service.h" />
     <ClInclude Include="servers\base_server.h" />
-    <ClInclude Include="service_message_handler.h" />
+    <ClInclude Include="helpers\service_message_handler.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">

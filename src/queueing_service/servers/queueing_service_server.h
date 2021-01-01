@@ -8,14 +8,14 @@
 #include <thread>
 
 #include "base_server.h"
-#include "../service_message_handler.h"
+#include "../helpers/service_message_handler.h"
 
 namespace queueing_service {
 	class queueing_service;
 
 	class queueing_service_server : public base_server , public service_message_handler {
 		private:
-			SOCKET* m_connected_service_socket;
+			SOCKET m_connected_service_socket;
 			std::thread m_connected_service_recv;
 			queueing_service* m_parent = nullptr;
 
@@ -24,7 +24,7 @@ namespace queueing_service {
 			int send_message(char* t_msg, unsigned int t_len);
 			int start(unsigned short t_port);
 			void stop();
-			void handle_accept(SOCKET* t_socket);
+			void handle_accept(SOCKET t_socket);
 
 		private:
 			void recv_from_connected_service();

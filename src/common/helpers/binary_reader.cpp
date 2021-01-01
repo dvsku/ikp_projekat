@@ -1,7 +1,6 @@
-#include "pch.h"
-#include "binary_reader.h"
-
 #include <string.h>
+
+#include "binary_reader.h"
 
 namespace common {
 	int binary_reader::read_int(char*& t_buffer) {

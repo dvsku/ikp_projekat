@@ -8,9 +8,6 @@
 
 #include <thread>
 
-#include "pch.h"
-#include "framework.h"
-
 namespace common {
 	class base_client {
 		private:

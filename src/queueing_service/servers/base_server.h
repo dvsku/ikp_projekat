@@ -26,7 +26,7 @@ namespace queueing_service {
 			void accept_connections();
 
 		protected:
-			virtual void handle_accept(SOCKET* t_socket) = 0;
+			virtual void handle_accept(SOCKET t_socket) = 0;
 	};
 }
 

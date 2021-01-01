@@ -1,6 +1,6 @@
 #include "queueing_service_server.h"
 #include "../queueing_service.h"
-#include "logger.h"
+#include "./helpers/logger.h"
 
 #define BUFFER_SIZE 1024
 
@@ -11,7 +11,7 @@ namespace queueing_service {
     queueing_service_server::queueing_service_server(queueing_service* t_parent) : 
         base_server::base_server(), service_message_handler::service_message_handler(t_parent) {
 
-        m_connected_service_socket = nullptr;
+        m_connected_service_socket = NULL;
         m_parent = t_parent;
     }
 
@@ -34,8 +34,8 @@ namespace queueing_service {
     }
 
     int queueing_service_server::send_message(char* t_msg, unsigned int t_len) {
-        if (m_connected_service_socket != nullptr) {
-            int ret_val = send(*m_connected_service_socket, t_msg, t_len, 0);
+        if (m_connected_service_socket != NULL) {
+            int ret_val = send(m_connected_service_socket, t_msg, t_len, 0);
             if (ret_val == SOCKET_ERROR) {
                 LOG_ERROR("QSS_SM", "send failed with error: %d", WSAGetLastError());
                 return -1;
@@ -59,6 +59,27 @@ namespace queueing_service {
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //	HANDLERS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void queueing_service_server::handle_accept(SOCKET t_socket) {
+        struct sockaddr_storage connected_service_addr {};
+        int connected_service_addr_len = sizeof(connected_service_addr);
+
+        getpeername(t_socket, (struct sockaddr*)&connected_service_addr, &connected_service_addr_len);
+
+        struct sockaddr_in* s = (struct sockaddr_in*)&connected_service_addr;
+
+        LOG_INFO("QSS_HA", "Service connected from %s:%d", inet_ntoa(s->sin_addr), ntohs(s->sin_port));
+        
+        // close listening socket TODO
+
+        // set connected service socket
+        if (t_socket != NULL) {
+            m_connected_service_socket = t_socket;
+        }
+    }
+
     void queueing_service_server::recv_from_connected_service() {
         struct timeval timeout {};
         struct fd_set fds {};
@@ -67,13 +88,13 @@ namespace queueing_service {
         timeout.tv_usec = 50;
 
         while (!m_stop) {
-            if (m_connected_service_socket == nullptr) {
+            if (m_connected_service_socket == NULL) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 continue;
             }
 
             FD_ZERO(&fds);
-            FD_SET(*m_connected_service_socket, &fds);
+            FD_SET(m_connected_service_socket, &fds);
 
             switch (select(0, &fds, 0, 0, &timeout)) {
                 case 0: {  // timeout
@@ -86,11 +107,11 @@ namespace queueing_service {
                 default: {  // success
                     char* recv_buffer = new char[BUFFER_SIZE];
 
-                    int bytes_received = recv(*m_connected_service_socket, recv_buffer, BUFFER_SIZE, 0);
+                    int bytes_received = recv(m_connected_service_socket, recv_buffer, BUFFER_SIZE, 0);
 
                     if (bytes_received == SOCKET_ERROR) {
-                        closesocket(*m_connected_service_socket);
-                        m_connected_service_socket = nullptr;
+                        closesocket(m_connected_service_socket);
+                        m_connected_service_socket = NULL;
                         m_parent->on_service_disconnected();
                         LOG_INFO("QSS_RECV", "Queueing service disconnected.", WSAGetLastError());
                         delete[] recv_buffer;
@@ -98,8 +119,8 @@ namespace queueing_service {
                     }
 
                     if (bytes_received == 0) {
-                        closesocket(*m_connected_service_socket);
-                        m_connected_service_socket = nullptr;
+                        closesocket(m_connected_service_socket);
+                        m_connected_service_socket = NULL;
                         m_parent->on_service_disconnected();
                         LOG_INFO("QSS_RECV", "Queueing service disconnected.", WSAGetLastError());
                         delete[] recv_buffer;

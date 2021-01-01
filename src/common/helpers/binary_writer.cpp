@@ -1,7 +1,6 @@
-#include "pch.h"
-#include "binary_writer.h"
-
 #include <string.h>
+
+#include "binary_writer.h"
 
 namespace common {
 	void binary_writer::write_int(char*& t_buffer, int t_value) {

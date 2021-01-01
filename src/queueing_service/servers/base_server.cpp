@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "base_server.h"
-#include "logger.h"
+#include "./helpers/logger.h"
 
 namespace queueing_service {
     base_server::base_server() {
@@ -90,16 +90,8 @@ namespace queueing_service {
                     break;
                 };
                 default: {  // success
-                    struct sockaddr_storage connected_service_addr {};
-                    int connected_service_addr_len = sizeof(connected_service_addr);
-
                     SOCKET connected_service_socket = accept(this->m_listening_socket, NULL, NULL);
-                    getpeername(connected_service_socket, (struct sockaddr*)&connected_service_addr, &connected_service_addr_len);
-
-                    struct sockaddr_in* s = (struct sockaddr_in*)&connected_service_addr;
-
-                    LOG_INFO("BS_AC", "Service connected from %s:%d", inet_ntoa(s->sin_addr), ntohs(s->sin_port));
-                    handle_accept(&connected_service_socket);
+                    handle_accept(connected_service_socket);
                     break;
                 };
             }
