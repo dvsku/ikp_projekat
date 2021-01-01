@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
 	if (start_as_host) {
 		if (p_q_service->start_as_host() == -1) {
 			LOG_INFO("MAIN", "Failed to start as host. Exiting.");
+			p_q_service->stop_host();
 			delete p_q_service;
 			return 1;
 		}
