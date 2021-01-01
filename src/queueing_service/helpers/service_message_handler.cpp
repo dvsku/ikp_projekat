@@ -1,8 +1,10 @@
+#include <winsock2.h>
+
 #include "service_message_handler.h"
-#include "queueing_service.h"
-#include "common_enums.h"
-#include "binary_reader.h"
-#include "logger.h"
+#include "../queueing_service.h"
+#include "./helpers/common_enums.h"
+#include "./helpers/binary_reader.h"
+#include "./helpers/logger.h"
 
 namespace queueing_service {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +41,7 @@ namespace queueing_service {
 
             if (command == common::command::stos_client_connected_to_queue) {
                 common::queue_type queue_type = (common::queue_type)(ntohs(binary_reader.read_short(pos)));
+                to_process -= sizeof(short);
 
                 if (queue_type == common::queue_type::t_int)
                     m_parent->m_queue_int.m_client_connected = true;
@@ -49,10 +52,11 @@ namespace queueing_service {
                 else if (queue_type == common::queue_type::t_short)
                     m_parent->m_queue_short.m_client_connected = true;
                 else if (queue_type == common::queue_type::t_char)
-                    m_parent->m_queue_int.m_client_connected = true;
+                    m_parent->m_queue_char.m_client_connected = true;
             }
             else if (command == common::command::stos_client_disconnected_from_queue) {
                 common::queue_type queue_type = (common::queue_type)(ntohs(binary_reader.read_short(pos)));
+                to_process -= sizeof(short);
 
                 if (queue_type == common::queue_type::t_int)
                     m_parent->m_queue_int.m_client_connected = false;
@@ -63,7 +67,7 @@ namespace queueing_service {
                 else if (queue_type == common::queue_type::t_short)
                     m_parent->m_queue_short.m_client_connected = false;
                 else if (queue_type == common::queue_type::t_char)
-                    m_parent->m_queue_int.m_client_connected = false;
+                    m_parent->m_queue_char.m_client_connected = false;
             }
             else if (command == common::command::stos_send_message) {
                 if (type == common::message_type::t_int) {

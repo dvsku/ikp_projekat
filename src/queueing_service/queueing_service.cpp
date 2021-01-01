@@ -1,9 +1,7 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "queueing_service.h"
 #include "./helpers/message_serializer.h"
-#include "common_enums.h"
-#include "logger.h"
+#include "./helpers/common_enums.h"
+#include "./helpers/logger.h"
 
 namespace queueing_service {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,10 +56,10 @@ namespace queueing_service {
 		clean_queues();
 	}
 
-	void queueing_service::queueing_service::on_client_disconnected(SOCKET* t_client_socket) {
+	void queueing_service::queueing_service::on_client_disconnected(SOCKET t_client_socket) {
 		disconnect_from_queue(t_client_socket);
 		m_clients.remove_item_by_value(t_client_socket);
-		closesocket(*t_client_socket);
+		closesocket(t_client_socket);
 	}
 
 	void queueing_service::queueing_service::on_service_disconnected() {
@@ -88,7 +86,7 @@ namespace queueing_service {
 			m_queue_char.is_client_connected_to_queue(t_name);
 	}
 	
-	bool queueing_service::queueing_service::connect_to_queue(std::string t_name, SOCKET* t_client_socket) {
+	bool queueing_service::queueing_service::connect_to_queue(std::string t_name, SOCKET t_client_socket) {
 		if (m_queue_int.m_name == t_name && m_queue_int.connect_to_queue(t_client_socket)) {
 			notify_connected_to_queue(common::queue_type::t_int);
 			return true;
@@ -113,7 +111,7 @@ namespace queueing_service {
 		return false;
 	}
 
-	void queueing_service::queueing_service::disconnect_from_queue(SOCKET* t_client_socket) {
+	void queueing_service::queueing_service::disconnect_from_queue(SOCKET t_client_socket) {
 		if (m_queue_int.disconnect_from_queue(t_client_socket))
 			notify_disconnected_from_queue(common::queue_type::t_int);
 		else if (m_queue_float.disconnect_from_queue(t_client_socket))
@@ -130,14 +128,18 @@ namespace queueing_service {
 		unsigned int total_size;
 		char* message = serialize_message(common::message_type::t_short, common::command::stos_client_connected_to_queue, &t_queue_type, &total_size);
 
-		return send_message_to_service(message, total_size);
+		int result = send_message_to_service(message, total_size);
+		delete[] message;
+		return result;
 	}
 
 	int queueing_service::queueing_service::notify_disconnected_from_queue(common::queue_type t_queue_type) {
 		unsigned int total_size;
 		char* message = serialize_message(common::message_type::t_short, common::command::stos_client_disconnected_from_queue, &t_queue_type, &total_size);
 
-		return send_message_to_service(message, total_size);
+		int result = send_message_to_service(message, total_size);
+		delete[] message;
+		return result;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,12 +158,12 @@ namespace queueing_service {
 			if (msg.m_receiver == receiver::client) {
 				char* message = serialize_message(common::message_type::t_int, common::command::stoc_send_message, msg.m_data, &size);
 
-				SOCKET* client_socket = m_queue_int.get_connected_client();
-				if (client_socket == nullptr) {
+				SOCKET client_socket = m_queue_int.get_connected_client();
+				if (client_socket == NULL) {
 					LOG_WARNING("QS_PROCESS_INT", "There was no client connected to queue, deleting message.");
 				}
 				else {
-					int result = send(*client_socket, message, size, 0);
+					int result = send(client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
 						LOG_ERROR("QS_PROCESS_INT", "Send message to client failed, deleting message.");
 						// close socket
@@ -204,12 +206,12 @@ namespace queueing_service {
 			if (msg.m_receiver == receiver::client) {
 				char* message = serialize_message(common::message_type::t_float, common::command::stoc_send_message, msg.m_data, &size);
 
-				SOCKET* client_socket = m_queue_float.get_connected_client();
-				if (client_socket == nullptr) {
+				SOCKET client_socket = m_queue_float.get_connected_client();
+				if (client_socket == NULL) {
 					LOG_WARNING("QS_PROCESS_FLOAT", "There was no client connected to queue, deleting message.");
 				}
 				else {
-					int result = send(*client_socket, message, size, 0);
+					int result = send(client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
 						LOG_ERROR("QS_PROCESS_FLOAT", "Send message to client failed, deleting message.");
 					}
@@ -252,12 +254,12 @@ namespace queueing_service {
 			if (msg.m_receiver == receiver::client) {
 				char* message = serialize_message(common::message_type::t_double, common::command::stoc_send_message, msg.m_data, &size);
 
-				SOCKET* client_socket = m_queue_double.get_connected_client();
-				if (client_socket == nullptr) {
+				SOCKET client_socket = m_queue_double.get_connected_client();
+				if (client_socket == NULL) {
 					LOG_WARNING("QS_PROCESS_DOUBLE", "There was no client connected to queue, deleting message.");
 				}
 				else {
-					int result = send(*client_socket, message, size, 0);
+					int result = send(client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
 						LOG_ERROR("QS_PROCESS_DOUBLE", "Send message to client failed, deleting message.");
 					}
@@ -300,12 +302,12 @@ namespace queueing_service {
 			if (msg.m_receiver == receiver::client) {
 				char* message = serialize_message(common::message_type::t_short, common::command::stoc_send_message, msg.m_data, &size);
 
-				SOCKET* client_socket = m_queue_short.get_connected_client();
-				if (client_socket == nullptr) {
+				SOCKET client_socket = m_queue_short.get_connected_client();
+				if (client_socket == NULL) {
 					LOG_WARNING("QS_PROCESS_SHORT", "There was no client connected to queue, deleting message.");
 				}
 				else {
-					int result = send(*client_socket, message, size, 0);
+					int result = send(client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
 						LOG_ERROR("QS_PROCESS_SHORT", "Send message to client failed, deleting message.");
 					}
@@ -348,12 +350,12 @@ namespace queueing_service {
 			if (msg.m_receiver == receiver::client) {
 				char* message = serialize_message(common::message_type::t_char, common::command::stoc_send_message, msg.m_data, &size);
 
-				SOCKET* client_socket = m_queue_char.get_connected_client();
-				if (client_socket == nullptr) {
+				SOCKET client_socket = m_queue_char.get_connected_client();
+				if (client_socket == NULL) {
 					LOG_WARNING("QS_PROCESS_CHAR", "There was no client connected to queue, deleting message.");
 				}
 				else {
-					int result = send(*client_socket, message, size, 0);
+					int result = send(client_socket, message, size, 0);
 					if (result == SOCKET_ERROR) {
 						LOG_ERROR("QS_PROCESS_CHAR", "Send message to client failed, deleting message.");
 					}

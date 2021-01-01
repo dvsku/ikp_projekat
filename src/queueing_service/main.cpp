@@ -1,5 +1,3 @@
-
-
 #ifdef _DEBUG
 	#define _CRTDBG_MAP_ALLOC
 	#include <crtdbg.h>
@@ -12,7 +10,7 @@
 #include <string>
 
 #include "queueing_service.h"
-#include "logger.h"
+#include "./helpers/logger.h"
 
 void print_usage();
 
@@ -23,16 +21,16 @@ int main(int argc, char* argv[]) {
 		print_usage();
 		return 0;
 	}
-	if (strcmp(argv[1], "-s") != 0 && strcmp(argv[1], "-c") != 0 && strcmp(argv[3], "-p") != 0) {
+	if ((strcmp(argv[1], "-s") != 0 && strcmp(argv[1], "-c") != 0) || strcmp(argv[3], "-p") != 0) {
 		print_usage();
 		return 0;
 	}
 
 	bool start_as_host = strcmp(argv[1], "-s") == 0;
-	int port = atoi(argv[2]);
+	int service_port = atoi(argv[2]);
 	int clients_port = atoi(argv[4]);
 
-	queueing_service::queueing_service* p_q_service = new queueing_service::queueing_service(port, clients_port, start_as_host);
+	queueing_service::queueing_service* p_q_service = new queueing_service::queueing_service(service_port, clients_port, start_as_host);
 	
 	if (start_as_host) {
 		if (p_q_service->start_as_host() == -1) {
@@ -75,6 +73,6 @@ void print_usage() {
 	printf("\t-s\t\t\t run service as host\n");
 	printf("\t-c\t\t\t run service as client\n");
 	printf("\t<service_port>\t\t port for service client to connect or service host to open\n");
-	printf("\t-c\t\t\t specifies that next argument is port for clients to connect\n");
+	printf("\t-p\t\t\t specifies that next argument is port for clients to connect\n");
 	printf("\t<clients_port>\t\t port for clients to connect\n");
 }

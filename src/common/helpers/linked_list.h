@@ -3,8 +3,6 @@
 #ifndef COMMON_HELPERS_LINKED_LIST_H
 #define COMMON_HELPERS_LINKED_LIST_H
 
-#include "pch.h"
-
 #include <mutex>
 
 namespace common {

@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -123,7 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -154,28 +154,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base_client.h" />
-    <ClInclude Include="binary_reader.h" />
-    <ClInclude Include="binary_writer.h" />
-    <ClInclude Include="common_enums.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="linked_list.h" />
-    <ClInclude Include="logger.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="thread_pool.h" />
+    <ClInclude Include="helpers\binary_reader.h" />
+    <ClInclude Include="helpers\binary_writer.h" />
+    <ClInclude Include="helpers\common_enums.h" />
+    <ClInclude Include="helpers\linked_list.h" />
+    <ClInclude Include="helpers\logger.h" />
+    <ClInclude Include="helpers\message_serializer.h" />
+    <ClInclude Include="helpers\thread_pool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base_client.cpp" />
-    <Text Include="linked_list.cpp">
+    <Text Include="helpers\linked_list.cpp">
       <FileType>Document</FileType>
     </Text>
-    <ClCompile Include="binary_reader.cpp" />
-    <ClCompile Include="binary_writer.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="helpers\binary_reader.cpp" />
+    <ClCompile Include="helpers\binary_writer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

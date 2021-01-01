@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <conio.h>
 
-#include "pch.h"
 #include "base_client.h"
-#include "logger.h"
+#include "./helpers/logger.h"
 
 #define SERVER_IP_ADDERESS "127.0.0.1"
 #define BUFFER_SIZE 1024

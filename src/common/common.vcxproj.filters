@@ -13,53 +13,53 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\helpers">
+      <UniqueIdentifier>{7526e603-2e46-4ebf-b722-a430f4f4b1f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\helpers">
+      <UniqueIdentifier>{a95919aa-0154-4d0c-9139-772d9e868744}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="thread_pool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="base_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="linked_list.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="helpers\binary_reader.h">
+      <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="common_enums.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="helpers\binary_writer.h">
+      <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="binary_reader.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="helpers\common_enums.h">
+      <Filter>Header Files\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="binary_writer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="helpers\linked_list.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\logger.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\message_serializer.h">
+      <Filter>Header Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\thread_pool.h">
+      <Filter>Header Files\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="binary_reader.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="helpers\binary_reader.cpp">
+      <Filter>Source Files\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="binary_writer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="helpers\binary_writer.cpp">
+      <Filter>Source Files\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="linked_list.cpp">
-      <Filter>Source Files</Filter>
+    <Text Include="helpers\linked_list.cpp">
+      <Filter>Source Files\helpers</Filter>
     </Text>
   </ItemGroup>
 </Project>

@@ -1,4 +1,7 @@
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NOTE: This is not really a .cpp file, it does not compile. It is used to implement linked_list.h and is included there.
+// Hacky way to separate a template class declaration and implementation.
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace common {
     template<typename T> linked_list<T>::linked_list() {
@@ -128,7 +131,7 @@ namespace common {
                 }
             }
             else {
-                for (int i = 0; i < index - 1; i++) {
+                for (unsigned int i = 0; i < index - 1; i++) {
                     node = node->next;
                 }
                 Node<T>* tmp = node->next;

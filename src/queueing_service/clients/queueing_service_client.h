@@ -4,7 +4,7 @@
 #define QUEUEING_SERVICE_CLIENTS_QUEUEING_SERVICE_CLIENT_H
 
 #include "base_client.h"
-#include "../service_message_handler.h"
+#include "../helpers/service_message_handler.h"
 
 namespace queueing_service {
 	class queueing_service;
