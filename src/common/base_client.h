@@ -20,15 +20,15 @@ namespace common {
 
 		public:
 			base_client();
-			int establish_connection(int port);
+			int establish_connection(int t_port);
 			void disconnect();
-			int send_message(char* msg, unsigned int len);
+			int send_message(char* t_buffer, unsigned int t_length);
 
 		private:
 			void do_recv();
 
 		protected:
-			virtual void handle_recv(char* buffer, unsigned int length) = 0;
+			virtual void handle_recv(char* t_buffer, unsigned int t_length) = 0;
 			virtual void handle_disconnect() = 0;
 	};
 }

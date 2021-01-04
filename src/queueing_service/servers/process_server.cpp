@@ -16,6 +16,13 @@ namespace queueing_service {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //	CONNECTION METHODS
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    /// <summary>
+    /// Opens a listening socket for clients to connect to. Starts a thread to accept clients and a thread to receive messages from
+    /// connected clients.
+    /// </summary>
+    /// <param name="t_port">Port for clients</param>
+    /// <returns>0 if there is no error, -1 if an error occurred.</returns>
     int process_server::start(unsigned int t_port) {
         int result = base_server::start(t_port);
 
@@ -23,6 +30,9 @@ namespace queueing_service {
         return result;
     }
     
+    /// <summary>
+    /// Closes the listening socket and stops accept and recv threads.
+    /// </summary>
     void process_server::stop() {
         // close listening socket and stop its thread
         base_server::stop();
@@ -33,6 +43,9 @@ namespace queueing_service {
             m_clients_recv.join();
     }
 
+    /// <summary>
+    /// Checks every client for incoming messages. If a message arrived, passes the socket to a thread pool for processing.
+    /// </summary>
     void process_server::recv_from_clients() {
         struct timeval timeout {};
         struct fd_set fds {};
@@ -46,6 +59,8 @@ namespace queueing_service {
                 continue;
             }
 
+            // Take a client form the list, process it and then put it back at the end of the list.
+            // That way we process all the clients and don't run into errors if a client disconnects.
             SOCKET current_socket = m_parent->m_clients.take_first_item();
 
             FD_ZERO(&fds);
@@ -53,16 +68,16 @@ namespace queueing_service {
 
             int result = select(0, &fds, 0, 0, &timeout);
 
-            if (result == -1) {
+            if (result == -1) {     // an error occurred
                 LOG_ERROR("PS_RECV", "select failed with error: %d", WSAGetLastError());
                 m_parent->m_clients.append_node(current_socket);
             }
-            else if (result > 0) {
+            else if (result > 0) {  // ready to read
                 m_clients_process_recv.enqueue([&]() {
                     handle_recv(current_socket);
                 });
             }
-            else {
+            else {                  // timed out
                 m_parent->m_clients.append_node(current_socket);
             }
 
@@ -73,10 +88,16 @@ namespace queueing_service {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //	HANDLERS
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    /// <summary>
+    /// Called when a client has connected to the listening socket. Adds the client to a list of connected clients.
+    /// </summary>
+    /// <param name="t_socket">Connected client's socket.</param>
     void process_server::handle_accept(SOCKET t_socket) {
         struct sockaddr_storage connected_service_addr {};
         int connected_service_addr_len = sizeof(connected_service_addr);
 
+        // get socket info
         getpeername(t_socket, (struct sockaddr*)&connected_service_addr, &connected_service_addr_len);
 
         struct sockaddr_in* s = (struct sockaddr_in*)&connected_service_addr;
@@ -86,6 +107,10 @@ namespace queueing_service {
         m_parent->m_clients.append_node(t_socket);
     }
 
+    /// <summary>
+    /// Receive messages from a socket and process them.
+    /// </summary>
+    /// <param name="t_socket">Client socket.</param>
     void process_server::handle_recv(SOCKET t_socket) {
         char recv_buffer[1024];
         int bytes_received = recv(t_socket, recv_buffer, sizeof(recv_buffer), 0);

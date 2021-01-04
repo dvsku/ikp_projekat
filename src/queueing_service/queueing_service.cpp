@@ -23,6 +23,11 @@ namespace queueing_service {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	CONNECTION METHODS
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Start the queueing service as a host for another queueing service.
+	/// </summary>
+	/// <returns>-1 if an error occurred, 0 if it was successful.</returns>
 	int queueing_service::start_as_host() {
 		if (m_service_server.start(m_service_port) == -1 || m_clients_server.start(m_clients_port) == -1) {
 			return -1;
@@ -33,6 +38,10 @@ namespace queueing_service {
 		return 0;
 	}
 
+	/// <summary>
+	/// Starts the queueing service as a client and connects to the host.
+	/// </summary>
+	/// <returns>-1 if an error occurred, 0 if it was successful.</returns>
 	int queueing_service::start_as_client() {
 		if (m_service_client.establish_connection(m_service_port) == -1 || m_clients_server.start(m_clients_port) == -1) {
 			return -1;
@@ -42,6 +51,9 @@ namespace queueing_service {
 		return 0;
 	}
 
+	/// <summary>
+	/// Stops the queueing service that was started as a host.
+	/// </summary>
 	void queueing_service::stop_host() {
 		m_stop = true;
 		m_service_server.stop();
@@ -49,6 +61,9 @@ namespace queueing_service {
 		clean_queues();
 	}
 
+	/// <summary>
+	/// Stops the queueing service that was started as a client.
+	/// </summary>
 	void queueing_service::stop_client() {
 		m_stop = true;
 		m_service_client.disconnect();
@@ -56,12 +71,19 @@ namespace queueing_service {
 		clean_queues();
 	}
 
+	/// <summary>
+	/// Cleanup when a client disconnects.
+	/// </summary>
+	/// <param name="t_client_socket">Client socket.</param>
 	void queueing_service::queueing_service::on_client_disconnected(SOCKET t_client_socket) {
 		disconnect_from_queue(t_client_socket);
 		m_clients.remove_item_by_value(t_client_socket);
 		closesocket(t_client_socket);
 	}
 
+	/// <summary>
+	/// Cleanup when a service disconnects.
+	/// </summary>
 	void queueing_service::queueing_service::on_service_disconnected() {
 		m_queue_int.m_client_connected = false;
 		m_queue_float.m_client_connected = false;
@@ -70,6 +92,12 @@ namespace queueing_service {
 		m_queue_char.m_client_connected = false;
 	}
 
+	/// <summary>
+	/// Send a message to the other service.
+	/// </summary>
+	/// <param name="t_msg">Message</param>
+	/// <param name="t_len">Message length</param>
+	/// <returns>-1 if an error occurred, bytes sent if it was successful.</returns>
 	int queueing_service::send_message_to_service(char* t_msg, unsigned int t_len) {
 		if (m_is_host)
 			return m_service_server.send_message(t_msg, t_len);
@@ -80,12 +108,25 @@ namespace queueing_service {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	QUEUE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Check if there is a client connected to a queue by a specified name.
+	/// </summary>
+	/// <param name="t_name">Queue name</param>
+	/// <returns>true if there is a queue by that name and a client connected to it, otherwise false.</returns>
 	bool queueing_service::queueing_service::is_client_connected_to_queue(std::string t_name) {
 		return m_queue_int.is_client_connected_to_queue(t_name) || m_queue_float.is_client_connected_to_queue(t_name) ||
 			m_queue_double.is_client_connected_to_queue(t_name) || m_queue_short.is_client_connected_to_queue(t_name) ||
 			m_queue_char.is_client_connected_to_queue(t_name);
 	}
 	
+	/// <summary>
+	/// Tries to connect a client to a queue by a specified name and notify the other service that a client has
+	/// connected to the queue.
+	/// </summary>
+	/// <param name="t_name">Queue name</param>
+	/// <param name="t_client_socket">Client socket</param>
+	/// <returns>true if connection was successful, otherwise false.</returns>
 	bool queueing_service::queueing_service::connect_to_queue(std::string t_name, SOCKET t_client_socket) {
 		if (m_queue_int.m_name == t_name && m_queue_int.connect_to_queue(t_client_socket)) {
 			notify_connected_to_queue(common::queue_type::t_int);
@@ -111,6 +152,10 @@ namespace queueing_service {
 		return false;
 	}
 
+	/// <summary>
+	/// Disconect a client from a queue and notify the other service that the client has disconnected from the queue.
+	/// </summary>
+	/// <param name="t_client_socket">Client socket</param>
 	void queueing_service::queueing_service::disconnect_from_queue(SOCKET t_client_socket) {
 		if (m_queue_int.disconnect_from_queue(t_client_socket))
 			notify_disconnected_from_queue(common::queue_type::t_int);
@@ -124,6 +169,11 @@ namespace queueing_service {
 			notify_disconnected_from_queue(common::queue_type::t_char);
 	}
 
+	/// <summary>
+	/// Send a message to the other service that a client has connected to a specific queue.
+	/// </summary>
+	/// <param name="t_queue_type">Queue type</param>
+	/// <returns>-1 if an error occurred, bytes sent if it was successful.</returns>
 	int queueing_service::queueing_service::notify_connected_to_queue(common::queue_type t_queue_type) {
 		unsigned int total_size;
 		char* message = serialize_message(common::message_type::t_short, common::command::stos_client_connected_to_queue, &t_queue_type, &total_size);
@@ -133,6 +183,11 @@ namespace queueing_service {
 		return result;
 	}
 
+	/// <summary>
+	/// Send a message to the other service that a client has disconnected from a specific queue.
+	/// </summary>
+	/// <param name="t_queue_type">Queue type</param>
+	/// <returns>-1 if an error occurred, bytes sent if it was successful.</returns>
 	int queueing_service::queueing_service::notify_disconnected_from_queue(common::queue_type t_queue_type) {
 		unsigned int total_size;
 		char* message = serialize_message(common::message_type::t_short, common::command::stos_client_disconnected_from_queue, &t_queue_type, &total_size);
@@ -145,6 +200,10 @@ namespace queueing_service {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	MESSAGE PROCESSING METHODS
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Process int queue messages.
+	/// </summary>
 	void queueing_service::process_int() {
 		while (!m_stop) {
 			if (m_queue_int.is_empty()) {
@@ -193,6 +252,9 @@ namespace queueing_service {
 		}
 	}
 
+	/// <summary>
+	/// Process float queue messages.
+	/// </summary>
 	void queueing_service::process_float() {
 		while (!m_stop) {
 			if (m_queue_float.is_empty()) {
@@ -241,6 +303,9 @@ namespace queueing_service {
 		}
 	}
 
+	/// <summary>
+	/// Process double queue messages.
+	/// </summary>
 	void queueing_service::process_double() {
 		while (!m_stop) {
 			if (m_queue_double.is_empty()) {
@@ -289,6 +354,9 @@ namespace queueing_service {
 		}
 	}
 
+	/// <summary>
+	/// Process short queue messages.
+	/// </summary>
 	void queueing_service::process_short() {
 		while (!m_stop) {
 			if (m_queue_short.is_empty()) {
@@ -337,6 +405,9 @@ namespace queueing_service {
 		}
 	}
 
+	/// <summary>
+	/// Process char queue messages.
+	/// </summary>
 	void queueing_service::process_char() {
 		while (!m_stop) {
 			if (m_queue_char.is_empty()) {
@@ -387,6 +458,10 @@ namespace queueing_service {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	CLEANUP METHODS
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Stops threads processing the queues and frees memory allocated by messages.
+	/// </summary>
 	void queueing_service::clean_queues() {
 		if (m_process_queue_int.joinable())
 			m_process_queue_int.join();

@@ -11,6 +11,11 @@ namespace queueing_service {
         m_stop = false;
     }
 
+    /// <summary>
+    /// Open a listening socket and start a thread to accept connections.
+    /// </summary>
+    /// <param name="t_port">Port</param>
+    /// <returns>-1 if an error occurred, 0 if it was successful.</returns>
     int base_server::start(unsigned short t_port) {
         sockaddr_in serverAddress{};
         int sockAddrLen = sizeof(struct sockaddr);
@@ -61,6 +66,9 @@ namespace queueing_service {
         return 0;
     }
 
+    /// <summary>
+    /// Close the listening socket and stop accept connections thread.
+    /// </summary>
     void base_server::stop() {
         m_stop = true;
 
@@ -70,6 +78,9 @@ namespace queueing_service {
         closesocket(m_listening_socket);
     }
 
+    /// <summary>
+    /// Checks the listening socket for incoming connections and accepts them.
+    /// </summary>
     void base_server::accept_connections() {
         struct timeval timeout {};
         struct fd_set fds {};

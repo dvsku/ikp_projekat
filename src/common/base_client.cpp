@@ -12,31 +12,36 @@ namespace common {
 		m_client_socket = NULL;
 	}
 
-	int base_client::establish_connection(int port) {
+	/// <summary>
+	/// Connect to a host.
+	/// </summary>
+	/// <param name="port">Port</param>
+	/// <returns>-1 if an error occurred, 0 if it was successful.</returns>
+	int base_client::establish_connection(int t_port) {
 		sockaddr_in serverAddress{};
 		int sockAddrLen = sizeof(struct sockaddr);
 		WSADATA wsaData;
 
 		int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (result != 0) {
-			LOG_ERROR("BASE_CLIENT_ESTABLISH_CONNECTION", "WSAStartup failed with error: %d", result);
+			LOG_ERROR("BC_ESTABLISH_CONNECTION", "WSAStartup failed with error: %d", result);
 			return -1;
 		}
 
 		memset((char*)&serverAddress, 0, sizeof(serverAddress));
 		serverAddress.sin_family = AF_INET;
 		serverAddress.sin_addr.s_addr = inet_addr(SERVER_IP_ADDERESS);
-		serverAddress.sin_port = htons((u_short)port);
+		serverAddress.sin_port = htons((u_short)t_port);
 
 		this->m_client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 		if (this->m_client_socket == INVALID_SOCKET) {
-			LOG_ERROR("BASE_CLIENT_ESTABLISH_CONNECTION", "Creating socket failed with error: %d", WSAGetLastError());
+			LOG_ERROR("BC_ESTABLISH_CONNECTION", "Creating socket failed with error: %d", WSAGetLastError());
 			return -1;
 		}
 
 		if (connect(this->m_client_socket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-			LOG_ERROR("BASE_CLIENT_ESTABLISH_CONNECTION", "connect failed with error: %d", WSAGetLastError());
+			LOG_ERROR("BC_ESTABLISH_CONNECTION", "connect failed with error: %d", WSAGetLastError());
 			closesocket(this->m_client_socket);
 			return -1;
 		}
@@ -46,6 +51,9 @@ namespace common {
 		return 0;
 	}
 
+	/// <summary>
+	/// Disconnect from the host.
+	/// </summary>
 	void base_client::disconnect() {
 		m_stop = true;
 
@@ -54,7 +62,7 @@ namespace common {
 
 		if (this->m_client_socket != NULL) {
 			if (closesocket(this->m_client_socket) == SOCKET_ERROR) {
-				LOG_ERROR("BASE_CLIENT_DISCONNECT", "closesocket failed with error: %d", WSAGetLastError());
+				LOG_ERROR("BC_DISCONNECT", "closesocket failed with error: %d", WSAGetLastError());
 				return;
 			}
 		}
@@ -62,11 +70,17 @@ namespace common {
 		m_socket_created = false;
 	}
 
-	int base_client::send_message(char* msg, unsigned int len) {
+	/// <summary>
+	/// Send a message to the host.
+	/// </summary>
+	/// <param name="msg">Message</param>
+	/// <param name="len">Message length</param>
+	/// <returns>-1 if an error occured, bytes sent if it was successful.</returns>
+	int base_client::send_message(char* t_buffer, unsigned int t_length) {
 		if (m_client_socket != NULL && m_socket_created) {
-			int ret_val = send(m_client_socket, msg, len, 0);
+			int ret_val = send(m_client_socket, t_buffer, t_length, 0);
 			if (ret_val == SOCKET_ERROR) {
-				LOG_ERROR("BASE_CLIENT_SEND_MESSAGE", "send failed with error: %d", WSAGetLastError());
+				LOG_ERROR("BC_SEND_MESSAGE", "send failed with error: %d", WSAGetLastError());
 				return ret_val;
 			}
 			else {
@@ -76,6 +90,9 @@ namespace common {
 		return -1;
 	}
 
+	/// <summary>
+	/// Receive messages from the host.
+	/// </summary>
 	void base_client::do_recv() {
 		struct timeval timeout {};
 		struct fd_set fds {};
@@ -97,7 +114,7 @@ namespace common {
 					break;
 				};
 				case -1: {  // error
-					LOG_ERROR("BASE_CLIENT_DO_RECV", "select failed with error: %d", WSAGetLastError());
+					LOG_ERROR("BC_RECV", "select failed with error: %d", WSAGetLastError());
 					break;
 				};
 				default: {  // success

@@ -17,7 +17,13 @@ namespace queueing_service {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //	HANDLERS
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void service_message_handler::handle_message(char* t_buffer, unsigned int t_length) {
+	
+    /// <summary>
+    /// Handle messages received by clients.
+    /// </summary>
+    /// <param name="t_buffer">Message</param>
+    /// <param name="t_length">Message length</param>
+    void service_message_handler::handle_message(char* t_buffer, unsigned int t_length) {
         // total len of all messages received
         unsigned int to_process = t_length;
         // pointer to begining of buffer

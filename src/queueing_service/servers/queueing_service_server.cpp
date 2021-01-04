@@ -18,6 +18,22 @@ namespace queueing_service {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //	CONNECTION METHODS
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    /// <summary>
+    /// Open a listening socket for client queueing service on a desired port. Start a thread for accepting clients and a thread for
+    /// receiveing messages.
+    /// </summary>
+    /// <param name="t_port">Port for a queueing service.</param>
+    /// <returns>0 if there is no error, -1 if an error occurred.</returns>
+    int queueing_service_server::start(unsigned short t_port) {
+        auto ret_val = base_server::start(t_port);
+        m_connected_service_recv = std::thread(&queueing_service_server::recv_from_connected_service, this);
+        return ret_val;
+    }
+    
+    /// <summary>
+    /// Close socket and stop accept and receive threads.
+    /// </summary>
     void queueing_service_server::stop() {
         // close listening socket and stop its thread
         base_server::stop();
@@ -27,12 +43,12 @@ namespace queueing_service {
             m_connected_service_recv.join();
     }
 
-    int queueing_service_server::start(unsigned short t_port) {
-        auto ret_val = base_server::start(t_port);
-        m_connected_service_recv = std::thread(&queueing_service_server::recv_from_connected_service, this);
-        return ret_val;
-    }
-
+    /// <summary>
+    /// Send a message to the connected queueing service.
+    /// </summary>
+    /// <param name="t_msg">Message</param>
+    /// <param name="t_len">Message length</param>
+    /// <returns>-1 if an error occurred, bytes received if it was successful.</returns>
     int queueing_service_server::send_message(char* t_msg, unsigned int t_len) {
         if (m_connected_service_socket != NULL) {
             int ret_val = send(m_connected_service_socket, t_msg, t_len, 0);
@@ -50,10 +66,16 @@ namespace queueing_service {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //	HANDLERS
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    /// <summary>
+    /// Called when a queueing service has connected.
+    /// </summary>
+    /// <param name="t_socket">Queueing service socket.</param>
     void queueing_service_server::handle_accept(SOCKET t_socket) {
         struct sockaddr_storage connected_service_addr {};
         int connected_service_addr_len = sizeof(connected_service_addr);
 
+        // get socket info
         getpeername(t_socket, (struct sockaddr*)&connected_service_addr, &connected_service_addr_len);
 
         struct sockaddr_in* s = (struct sockaddr_in*)&connected_service_addr;
@@ -68,6 +90,9 @@ namespace queueing_service {
         }
     }
 
+    /// <summary>
+    /// Receive messages from the connected queueing service and process them.
+    /// </summary>
     void queueing_service_server::recv_from_connected_service() {
         struct timeval timeout {};
         struct fd_set fds {};
