@@ -1,10 +1,3 @@
-#ifdef _DEBUG
-	#define _CRTDBG_MAP_ALLOC
-	#include <crtdbg.h>
-	#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
-	#define new DEBUG_NEW
-#endif
-
 #include <conio.h>
 
 #include <string>
@@ -15,8 +8,6 @@
 void print_usage();
 
 int main(int argc, char* argv[]) {		
-	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-
 	if (argc < 5 || argc > 5) {
 		print_usage();
 		return 0;
@@ -64,7 +55,6 @@ int main(int argc, char* argv[]) {
 	delete p_q_service;
 	
 	WSACleanup();
-	_CrtDumpMemoryLeaks();
 	return 0;
 }
 

@@ -38,6 +38,8 @@ namespace queueing_service {
         // close listening socket and stop its thread
         base_server::stop();
 
+        m_stop = true;
+
         // wait for recv thread to stop
         if (m_connected_service_recv.joinable())
             m_connected_service_recv.join();
