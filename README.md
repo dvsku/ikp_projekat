@@ -15,7 +15,9 @@
 Starts queueing_service as host for another service on port 15000 and host for clients on port 15001.<br/>
 ```queueing_service.exe -s 15000 -p 15001``` <br/> <br/> 
 Starts queueing_service as client and connects to another service on port 15000 and host for clients on port 15002.<br/>
-```queueing_service.exe -s 15000 -p 15002``` <br/> 
+```queueing_service.exe -c 15000 -p 15002``` <br/> <br/> 
+Starts process and connects to queueing_service on port 15001.<br/>
+```process.exe 15001``` <br/> 
 ### Authors
 PR85/2016  Nikola Stojšin <br/>
 PR116/2015 Sara Jović 
