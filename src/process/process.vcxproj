@@ -143,16 +143,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\backup\process\main.cpp" />
-    <ClCompile Include="..\..\..\backup\process\process_client.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{c2ca3785-c0c5-41f4-b327-acafd6e23ceb}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\backup\process\process_client.h" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="process_client.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="process_client.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

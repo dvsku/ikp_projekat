@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\backup\process\process_client.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\backup\process\main.cpp">
+    <ClCompile Include="process_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\backup\process\process_client.h">
+    <ClInclude Include="process_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
