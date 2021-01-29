@@ -47,11 +47,48 @@ void process_client::handle_recv(char* buffer, unsigned int length) {
                 printf("Connected: false\n");
         }
         else if (command == common::command::stoc_send_message) {
-            char* data = binary_reader.read_char(pos, len);
-            to_process -= len;
+			switch (type) {
+				case common::message_type::t_int: {
+					unsigned int total_size;
+					int data = ntohl(binary_reader.read_int(pos));
+					to_process -= sizeof(int);
 
-            printf("Received message: %s\n", data);
-            delete[] data;
+					printf("Received message: %d\n", data);
+					break;
+				}
+				case common::message_type::t_float: {
+					unsigned int total_size;
+					float data = ntohf(binary_reader.read_float(pos));
+					to_process -= sizeof(float);
+
+					printf("Received message: %.2f\n", data);
+					break;
+				}
+				case common::message_type::t_double: {
+					unsigned int total_size;
+					double data = ntohd(binary_reader.read_double(pos));
+					to_process -= sizeof(double);
+
+					printf("Received message: %.2f\n", data);
+					break;
+				}
+				case common::message_type::t_short: {
+					unsigned int total_size;
+					short data = ntohs(binary_reader.read_short(pos));
+					to_process -= sizeof(short);
+
+					printf("Received message: %d\n", data);
+					break;
+				}
+				case common::message_type::t_char: {
+					char* data = binary_reader.read_char(pos, len);
+					to_process -= len;
+
+					printf("Received message: %s\n", data);
+					delete[] data;
+					break;
+				}
+			}
         }
     }
 
